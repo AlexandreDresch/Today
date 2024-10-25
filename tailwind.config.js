@@ -7,6 +7,9 @@ export default {
         orbitron: ["Orbitron", "sans-serif"],
         archivo: ["Archivo", "sans-serif"],
       },
+      backgroundImage: {
+        'main-pattern': "url('/background.svg')",
+      }
     },
   },
   plugins: [],
