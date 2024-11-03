@@ -2,7 +2,7 @@ import { ComponentProps } from "../../types";
 
 export class Component {
   props: ComponentProps;
-  element: DocumentFragment;
+  element: DocumentFragment | HTMLElement;
 
   constructor(props: ComponentProps = {}) {
     this.props = props;
