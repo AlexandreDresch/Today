@@ -1,6 +1,7 @@
 import { daysOfWeek } from "../constants";
 import { DailyTasks, MainSectionProps, Task } from "../types";
 import { Component } from "./shared/component";
+import { Modal } from "./shared/modal";
 import { TaskCard } from "./task-card";
 
 export class MainSection extends Component {
@@ -90,6 +91,9 @@ export class MainSection extends Component {
       const clearButton = this.element.querySelector(
         "#clear-search"
       ) as HTMLButtonElement;
+      const addButton = this.element.querySelector(
+        "#addButton"
+      ) as HTMLButtonElement;
 
       if (daySelect) {
         daySelect.addEventListener("change", this.handleDayChange);
@@ -106,6 +110,10 @@ export class MainSection extends Component {
       }
       if (clearButton) {
         clearButton.addEventListener("click", this.clearSearch);
+      }
+
+      if (addButton) {
+        addButton.addEventListener("click", () => this.handleAddButtonClick());
       }
     }, 0);
   }
@@ -125,6 +133,16 @@ export class MainSection extends Component {
       });
   }
 
+  private handleAddButtonClick(): void {
+    const modal = new Modal({
+      title: "Add Task",
+      content: "Form content or fields go here",
+      buttonLabel: "Add Task",
+      onClose: () => {},
+    });
+    modal.mount(document.body);
+  }
+
   render(): string {
     const filteredTasks = this.getFilteredTasks();
     const uniqueCategories = [
@@ -138,8 +156,7 @@ export class MainSection extends Component {
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-baseline">
               <h3 class="font-archivo font-medium">${this.selectedDay}</h3>
-              <button class="font-archivo text-gray-500 font-light tracking-widest">Add</button>
-            </div>
+              <button id="addButton" class="font-archivo text-gray-500 font-light tracking-widest">Add</button>            </div>
             <form class="flex flex-col gap-2" onsubmit="return false;">
               <div class="flex gap-2">
                 <label for="underline_category" class="sr-only">By category</label>
