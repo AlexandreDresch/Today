@@ -3,16 +3,10 @@ export interface ComponentProps {
 }
 
 export interface Task {
+  id: string;
   title: string;
-  description: string;
+  description?: string;
   category: string;
-}
-
-export interface DailyTasks {
-  day: string;
-  tasks: Task[];
-}
-
-export interface MainSectionProps {
-  tasks: DailyTasks[]
+  date: string;
+  completed: boolean;
 }
