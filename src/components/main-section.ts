@@ -1,8 +1,9 @@
 import { daysOfWeek } from "../constants";
-import { DailyTasks, MainSectionProps, Task } from "../types";
+import { Task } from "../types";
 import { Component } from "./shared/component";
-import { Modal } from "./shared/modal";
+import { AddTaskModal } from "./add-task-modal";
 import { TaskCard } from "./task-card";
+import store from "../store/store";
 
 export class MainSection extends Component {
   private selectedDay: string;
@@ -12,13 +13,13 @@ export class MainSection extends Component {
   private currentTasks: Task[];
   element: HTMLElement;
 
-  constructor(props: MainSectionProps) {
-    super(props);
-    this.selectedDay = this.getCurrentDay();
-    this.selectedCategory = null;
-    this.searchQuery = "";
+  constructor() {
+    super();
+    this.selectedDay = store.getState().tasks.selectedDay;
+    this.selectedCategory = store.getState().tasks.selectedCategory;
+    this.searchQuery = store.getState().tasks.searchQuery;
     this.tempSearchQuery = "";
-    this.currentTasks = this.getTasksForDay(this.selectedDay);
+    this.currentTasks = this.getTasksForDay(Date.now().toString());
 
     this.handleDayChange = this.handleDayChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
@@ -32,16 +33,21 @@ export class MainSection extends Component {
     this.addEventListeners();
   }
 
-  private getCurrentDay(): string {
-    const today = new Date();
-    return daysOfWeek[today.getDay()];
-  }
-
   private getTasksForDay(day: string): Task[] {
-    const dayTasks = this.props.tasks.find(
-      (dayItem: DailyTasks) => dayItem.day === day
-    );
-    return dayTasks ? dayTasks.tasks : [];
+    const targetDate = new Date(day);
+    const tasks = store.getState().tasks.tasks;
+
+    const dayTasks = tasks.filter((task: Task) => {
+      const taskDate = new Date(task.date);
+
+      return (
+        taskDate.getFullYear() === targetDate.getFullYear() &&
+        taskDate.getMonth() === targetDate.getMonth() &&
+        taskDate.getDate() === targetDate.getDate()
+      );
+    });
+
+    return dayTasks;
   }
 
   private handleDayChange(event: Event): void {
@@ -113,7 +119,10 @@ export class MainSection extends Component {
       }
 
       if (addButton) {
-        addButton.addEventListener("click", () => this.handleAddButtonClick());
+        addButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          this.handleAddButtonClick();
+        });
       }
     }, 0);
   }
@@ -134,12 +143,8 @@ export class MainSection extends Component {
   }
 
   private handleAddButtonClick(): void {
-    const modal = new Modal({
-      title: "Add Task",
-      content: "Form content or fields go here",
-      buttonLabel: "Add Task",
-      onClose: () => {},
-    });
+    const modal = new AddTaskModal();
+
     modal.mount(document.body);
   }
 
@@ -210,7 +215,7 @@ export class MainSection extends Component {
               </div>
             </form>
           </div>
-          <div class="mt-2 h-96 overflow-y-scroll space-y-2">
+          <div class="mt-2 p-px h-96 overflow-y-scroll space-y-2">
           ${
             filteredTasks.length === 0
               ? /*html*/ `<p class="text-center text-gray-500">No tasks found.</p>`
