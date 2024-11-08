@@ -1,22 +1,23 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Task } from "../types";
 
-// Função para recuperar dados do localStorage com fallback para array vazio
 const loadFromLocalStorage = (): Task[] => {
   const storedTasks = localStorage.getItem("tasks");
   return storedTasks ? JSON.parse(storedTasks) : [];
 };
 
-// Função para recuperar o dia selecionado do localStorage ou usar o valor padrão
 const loadSelectedDayFromLocalStorage = (): string => {
   const storedDay = localStorage.getItem("selectedDay");
-  return storedDay || new Date().toLocaleString("en-US", { weekday: "long" });
+  const localDate = new Date();
+  localDate.setHours(0, 0, 0, 0);
+
+  return storedDay || localDate.toISOString().split("T")[0];
 };
 
 interface TasksState {
   tasks: Task[];
   selectedDay: string;
-  selectedCategory: string | null; // Permitir tanto string quanto null
+  selectedCategory: string | null;
   searchQuery: string;
 }
 
@@ -25,18 +26,16 @@ const tasksSlice = createSlice({
   initialState: {
     tasks: loadFromLocalStorage(),
     selectedDay: loadSelectedDayFromLocalStorage(),
-    selectedCategory: null, // Aqui, `selectedCategory` pode ser null ou string
+    selectedCategory: null,
     searchQuery: "",
-  } as TasksState, // Especificando explicitamente o tipo do estado
+  } as TasksState,
   reducers: {
     setTasks(state, action: PayloadAction<Task[]>) {
       state.tasks = action.payload;
-      // Armazena as tarefas no localStorage
       localStorage.setItem("tasks", JSON.stringify(action.payload));
     },
     setSelectedDay(state, action: PayloadAction<string>) {
       state.selectedDay = action.payload;
-      // Armazena o dia selecionado no localStorage
       localStorage.setItem("selectedDay", action.payload);
     },
     setSelectedCategory(state, action: PayloadAction<string | null>) {
@@ -46,21 +45,32 @@ const tasksSlice = createSlice({
       state.searchQuery = action.payload;
     },
     addTask(state, action: PayloadAction<Task>) {
-      state.tasks.push(action.payload); // Adiciona a nova tarefa à lista
-      localStorage.setItem("tasks", JSON.stringify(state.tasks)); // Atualiza o localStorage
+      state.tasks.push(action.payload);
+      localStorage.setItem("tasks", JSON.stringify(state.tasks));
     },
-    editTask(state, action: PayloadAction<{ id: string; updatedTask: Partial<Task> }>) {
+    toggleTask(state, action: PayloadAction<string>) {
+      const taskId = action.payload;
+      const taskIndex = state.tasks.findIndex((task) => task.id === taskId);
+      if (taskIndex >= 0) {
+        const task = state.tasks[taskIndex];
+        task.completed = !task.completed;
+        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      }
+    },
+    editTask(
+      state,
+      action: PayloadAction<{ id: string; updatedTask: Partial<Task> }>
+    ) {
       const { id, updatedTask } = action.payload;
       const taskIndex = state.tasks.findIndex((task) => task.id === id);
       if (taskIndex >= 0) {
-        // Edita a tarefa existente
         state.tasks[taskIndex] = { ...state.tasks[taskIndex], ...updatedTask };
-        localStorage.setItem("tasks", JSON.stringify(state.tasks)); // Atualiza o localStorage
+        localStorage.setItem("tasks", JSON.stringify(state.tasks));
       }
     },
     deleteTask(state, action: PayloadAction<string>) {
-      state.tasks = state.tasks.filter((task) => task.id !== action.payload); // Remove a tarefa pelo id
-      localStorage.setItem("tasks", JSON.stringify(state.tasks)); // Atualiza o localStorage
+      state.tasks = state.tasks.filter((task) => task.id !== action.payload);
+      localStorage.setItem("tasks", JSON.stringify(state.tasks));
     },
   },
 });
@@ -71,6 +81,7 @@ export const {
   setSelectedCategory,
   setSearchQuery,
   addTask,
+  toggleTask,
   editTask,
   deleteTask,
 } = tasksSlice.actions;

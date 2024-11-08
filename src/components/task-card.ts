@@ -1,9 +1,18 @@
 import { Task } from "../types/index";
 import { Component } from "./shared/component.ts";
+import store from "../store/store";
+import { toggleTask } from "../store/task-slice.ts";
 
 export class TaskCard extends Component {
   constructor(props: Task) {
     super(props);
+    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+  }
+
+  private handleCheckboxChange(): void {
+    const taskId = this.props.id;
+
+    store.dispatch(toggleTask(taskId));
   }
 
   render(): string {
@@ -19,15 +28,35 @@ export class TaskCard extends Component {
               >
                 ${description}
               </p>
-              <p>Category: ${category}</p>
+              <p class="border px-2 border-slate-300 text-center">${category}</p>
           </div>
   
           <div class="flex flex-col justify-between">
-              <input id="checkbox" type="checkbox" value="${completed}" class="size-[14px] bg-transparent border-gray-300 focus:ring-black focus:ring-1 rounded-none">
+              <input id="checkbox" type="checkbox" value="${completed}" ${
+      completed ? "checked" : ""
+    } class="size-[14px] bg-transparent border-gray-300 focus:ring-black focus:ring-1 rounded-none">
               <img src="/icons/square-pen.svg" class="size-4"/>
               <img src="/icons/trash-2.svg" class="size-4"/>
           </div>
       </div>
-      `;
+    `;
+  }
+
+  mount(target: HTMLElement): void {
+    super.mount(target);
+
+    const checkbox = target.querySelector("#checkbox") as HTMLInputElement;
+    if (checkbox) {
+      checkbox.addEventListener("change", this.handleCheckboxChange);
+    }
+  }
+
+  unmount(): void {
+    const checkbox = this.element.querySelector(
+      "#checkbox"
+    ) as HTMLInputElement;
+    if (checkbox) {
+      checkbox.removeEventListener("change", this.handleCheckboxChange);
+    }
   }
 }
