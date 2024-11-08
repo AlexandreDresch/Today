@@ -1,9 +1,12 @@
-import { daysOfWeek } from "../constants";
 import { Task } from "../types";
 import { Component } from "./shared/component";
 import { AddTaskModal } from "./add-task-modal";
 import { TaskCard } from "./task-card";
 import store from "../store/store";
+import AirDatepicker from "air-datepicker";
+import localeEn from "air-datepicker/locale/en";
+import "air-datepicker/air-datepicker.css";
+import { formatDate } from "../utils/utils";
 
 export class MainSection extends Component {
   private selectedDay: string;
@@ -19,12 +22,28 @@ export class MainSection extends Component {
     this.selectedCategory = store.getState().tasks.selectedCategory;
     this.searchQuery = store.getState().tasks.searchQuery;
     this.tempSearchQuery = "";
-    this.currentTasks = this.getTasksForDay(Date.now().toString());
+
+    const localDate = new Date();
+    localDate.setHours(0, 0, 0, 0);
+    this.currentTasks = this.getTasksForDay(
+      localDate.toISOString().split("T")[0]
+    );
 
     this.handleDayChange = this.handleDayChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
+
+    store.subscribe(() => {
+      const state = store.getState();
+      this.selectedDay = state.tasks.selectedDay;
+      console.log(state.tasks.selectedDay);
+      this.selectedCategory = state.tasks.selectedCategory;
+      this.searchQuery = state.tasks.searchQuery;
+
+      this.currentTasks = this.getTasksForDay(this.selectedDay);
+      this.update();
+    });
 
     this.element = document.createElement("main");
     this.element.classList.add("main-section");
@@ -34,17 +53,10 @@ export class MainSection extends Component {
   }
 
   private getTasksForDay(day: string): Task[] {
-    const targetDate = new Date(day);
     const tasks = store.getState().tasks.tasks;
 
     const dayTasks = tasks.filter((task: Task) => {
-      const taskDate = new Date(task.date);
-
-      return (
-        taskDate.getFullYear() === targetDate.getFullYear() &&
-        taskDate.getMonth() === targetDate.getMonth() &&
-        taskDate.getDate() === targetDate.getDate()
-      );
+      return task.date === day;
     });
 
     return dayTasks;
@@ -85,9 +97,26 @@ export class MainSection extends Component {
 
   private addEventListeners(): void {
     setTimeout(() => {
-      const daySelect = this.element.querySelector(
-        "#underline_day"
-      ) as HTMLSelectElement;
+      const datepickerInput = this.element.querySelector(
+        "#datepicker-input"
+      ) as HTMLInputElement;
+      if (datepickerInput) {
+        new AirDatepicker(datepickerInput, {
+          autoClose: true,
+          locale: localeEn,
+          dateFormat: "yyyy-MM-dd",
+          onSelect: ({ formattedDate }) => {
+            if (Array.isArray(formattedDate)) {
+              this.selectedDay = formattedDate[0];
+            } else {
+              this.selectedDay = formattedDate;
+            }
+            this.currentTasks = this.getTasksForDay(this.selectedDay);
+            this.update();
+          },
+        });
+      }
+
       const categorySelect = this.element.querySelector(
         "#underline_category"
       ) as HTMLSelectElement;
@@ -101,9 +130,6 @@ export class MainSection extends Component {
         "#addButton"
       ) as HTMLButtonElement;
 
-      if (daySelect) {
-        daySelect.addEventListener("change", this.handleDayChange);
-      }
       if (categorySelect) {
         categorySelect.addEventListener("change", this.handleCategoryChange);
       }
@@ -117,7 +143,6 @@ export class MainSection extends Component {
       if (clearButton) {
         clearButton.addEventListener("click", this.clearSearch);
       }
-
       if (addButton) {
         addButton.addEventListener("click", (event) => {
           event.preventDefault();
@@ -157,11 +182,14 @@ export class MainSection extends Component {
 
     return /*html*/ `
       <section class="bg-main-pattern bg-no-repeat bg-cover h-screen flex items-center justify-center p-10">
-        <div class="bg-white border-4 border-black p-4 w-full">
+        <div class="bg-white border-4 border-black p-4 w-full max-w-3xl">
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-baseline">
-              <h3 class="font-archivo font-medium">${this.selectedDay}</h3>
-              <button id="addButton" class="font-archivo text-gray-500 font-light tracking-widest">Add</button>            </div>
+              <h3 class="font-archivo font-medium">${formatDate(
+                this.selectedDay
+              )}</h3>
+              <button id="addButton" class="font-archivo text-gray-500 font-light tracking-widest">Add</button>
+            </div>
             <form class="flex flex-col gap-2" onsubmit="return false;">
               <div class="flex gap-2">
                 <label for="underline_category" class="sr-only">By category</label>
@@ -178,20 +206,13 @@ export class MainSection extends Component {
                     )
                     .join("")}
                 </select>
-                <label for="underline_day" class="sr-only">By Day</label>
-                <select id="underline_day" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
-                  ${daysOfWeek
-                    .map(
-                      (day) => /*html*/ `
-                    <option value="${day}" ${
-                        day === this.selectedDay ? "selected" : ""
-                      }>
-                      ${day}
-                    </option>
-                  `
-                    )
-                    .join("")}
-                </select>
+                <label for="datepicker-input" class="sr-only">Select a Day</label>
+                <input 
+                  type="text" 
+                  id="datepicker-input" 
+                  placeholder="Select a Day"
+                  class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                />
               </div>
               <label for="simple-search" class="sr-only">Search by name</label>
               <div class="relative w-full">
