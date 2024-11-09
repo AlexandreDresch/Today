@@ -23,12 +23,7 @@ export class MainSection extends Component {
     this.searchQuery = store.getState().tasks.searchQuery;
     this.tempSearchQuery = "";
 
-    const localDate = new Date();
-    localDate.setHours(0, 0, 0, 0);
-    this.currentTasks = this.getTasksForDay(
-      localDate.toISOString().split("T")[0]
-    );
-
+    this.currentTasks = this.getTasksForDay(this.selectedDay);
     this.handleDayChange = this.handleDayChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
@@ -37,7 +32,6 @@ export class MainSection extends Component {
     store.subscribe(() => {
       const state = store.getState();
       this.selectedDay = state.tasks.selectedDay;
-      console.log(state.tasks.selectedDay);
       this.selectedCategory = state.tasks.selectedCategory;
       this.searchQuery = state.tasks.searchQuery;
 
@@ -179,15 +173,15 @@ export class MainSection extends Component {
       "All",
       ...new Set(this.currentTasks.map((task) => task.category)),
     ];
-
-    return /*html*/ `
+  
+    const extendedDay = formatDate(this.selectedDay);
+  
+    const html = /*html*/ `
       <section class="bg-main-pattern bg-no-repeat bg-cover h-screen flex items-center justify-center p-10">
         <div class="bg-white border-4 border-black p-4 w-full max-w-3xl">
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-baseline">
-              <h3 class="font-archivo font-medium">${formatDate(
-                this.selectedDay
-              )}</h3>
+              <h3 class="font-archivo font-medium">${extendedDay}</h3>
               <button id="addButton" class="font-archivo text-gray-500 font-light tracking-widest">Add</button>
             </div>
             <form class="flex flex-col gap-2" onsubmit="return false;">
@@ -197,12 +191,12 @@ export class MainSection extends Component {
                   ${uniqueCategories
                     .map(
                       (category) => /*html*/ `
-                    <option value="${category}" ${
-                        category === this.selectedCategory ? "selected" : ""
-                      }>
-                      ${category}
-                    </option>
-                  `
+                        <option value="${category}" ${
+                          category === this.selectedCategory ? "selected" : ""
+                        }>
+                          ${category}
+                        </option>
+                      `
                     )
                     .join("")}
                 </select>
@@ -211,6 +205,7 @@ export class MainSection extends Component {
                   type="text" 
                   id="datepicker-input" 
                   placeholder="Select a Day"
+                  autocomplete="off"
                   class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
                 />
               </div>
@@ -228,28 +223,37 @@ export class MainSection extends Component {
                 ${
                   this.tempSearchQuery
                     ? /*html*/ `
-                  <button id="clear-search" type="button" class="absolute inset-y-0 end-0 pe-3 flex items-center">
-                    <img src="/icons/x.svg"/>
-                  </button>`
+                    <button id="clear-search" type="button" class="absolute inset-y-0 end-0 pe-3 flex items-center">
+                      <img src="/icons/x.svg"/>
+                    </button>`
                     : ""
                 }
               </div>
             </form>
           </div>
-          <div class="mt-2 p-px h-96 overflow-y-scroll space-y-2">
-          ${
-            filteredTasks.length === 0
-              ? /*html*/ `<p class="text-center text-gray-500">No tasks found.</p>`
-              : filteredTasks
-                  .map((task) => {
-                    const taskCard = new TaskCard(task);
-                    return taskCard.render();
-                  })
-                  .join("")
-          }
-          </div>
+          <ul class="mt-2 p-px h-96 overflow-y-scroll space-y-2 tasks-container">
+            ${
+              filteredTasks.length === 0
+                ? /*html*/ `<p class="text-center text-gray-500">No tasks found.</p>`
+                : ""  
+            }
+          </ul>
         </div>
       </section>
     `;
+  
+    setTimeout(() => {
+      const tasksContainer = this.element.querySelector(".tasks-container") as HTMLElement;
+      if (tasksContainer && filteredTasks.length > 0) {
+        tasksContainer.innerHTML = "";
+        filteredTasks.forEach((task) => {
+          const taskCard = new TaskCard(task);
+          taskCard.mount(tasksContainer);
+        });
+      }
+    }, 0);
+  
+    return html;
   }
+  
 }
