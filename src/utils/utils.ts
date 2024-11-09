@@ -1,5 +1,6 @@
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
 
   const options: Intl.DateTimeFormatOptions = {
     weekday: "long",
@@ -8,5 +9,5 @@ export function formatDate(dateString: string): string {
     day: "2-digit",
   };
 
-  return date.toLocaleDateString("en-US", options);
+  return date.toLocaleDateString("en-US", { ...options, timeZone: "UTC" });
 }

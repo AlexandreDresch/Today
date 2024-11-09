@@ -6,12 +6,12 @@ const loadFromLocalStorage = (): Task[] => {
   return storedTasks ? JSON.parse(storedTasks) : [];
 };
 
-const loadSelectedDayFromLocalStorage = (): string => {
-  const storedDay = localStorage.getItem("selectedDay");
+const loadCurrentDay = (): string => {
   const localDate = new Date();
   localDate.setHours(0, 0, 0, 0);
+  const formattedDate = localDate.toISOString().split("T")[0];
 
-  return storedDay || localDate.toISOString().split("T")[0];
+  return formattedDate;
 };
 
 interface TasksState {
@@ -25,7 +25,7 @@ const tasksSlice = createSlice({
   name: "tasks",
   initialState: {
     tasks: loadFromLocalStorage(),
-    selectedDay: loadSelectedDayFromLocalStorage(),
+    selectedDay: loadCurrentDay(),
     selectedCategory: null,
     searchQuery: "",
   } as TasksState,
