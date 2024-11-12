@@ -26,7 +26,7 @@ export class AddTaskModal extends Component {
   }
 
   private handleSubmit(event: Event): void {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
     const title = (this.element.querySelector("#taskTitle") as HTMLInputElement)
       .value;
@@ -34,7 +34,7 @@ export class AddTaskModal extends Component {
       this.element.querySelector("#taskDescription") as HTMLTextAreaElement
     ).value;
     const category = (
-      this.element.querySelector("#taskCategory") as HTMLSelectElement
+      this.element.querySelector("#taskCategory") as HTMLInputElement
     ).value;
 
     const today = Date.now().toString();
@@ -80,19 +80,20 @@ export class AddTaskModal extends Component {
                 <input 
                   type="text" 
                   id="datepicker-input" 
-                  class="block mt-1 w-full border border-gray-300 p-2 text-sm text-gray-500 bg-transparent appearance-none peer"
+                  class="block mt-1 w-full border border-gray-300 p-2 text-sm text-gray-500 bg-transparent appearance-none peer" required
                 />
               </div>
 
               <div id="datepicker-container"></div>
 
               <div class="">
-                <label for="taskCategory" class="block text-sm font-medium text-gray-700">Category</label>
-                <select id="taskCategory" name="taskCategory" class="mt-1 block w-full border border-gray-300 rounded p-2">
-                  <option value="Work">Work</option>
-                  <option value="Personal">Personal</option>
-                  <option value="Hobby">Hobby</option>
-                </select>
+                <label for="taskCategory" class="block text-sm font-medium text-gray-700">Add a Category</label>
+                <input 
+                  type="text" 
+                  id="taskCategory"
+                  required
+                  class="block mt-1 w-full border border-gray-300 p-2 text-sm text-gray-500 bg-transparent appearance-none peer"
+                />
               </div>
 
               <button 
@@ -110,14 +111,15 @@ export class AddTaskModal extends Component {
   mount(target: HTMLElement): void {
     super.mount(target);
     (this.element as HTMLDialogElement).showModal();
-  
-    // Inicialização do AirDatepicker ao montar o modal
+
     const datepickerInput = this.element.querySelector(
       "#datepicker-input"
     ) as HTMLInputElement;
-    
-    const datepickerContainer = this.element.querySelector("#datepicker-container");
-  
+
+    const datepickerContainer = this.element.querySelector(
+      "#datepicker-container"
+    );
+
     new AirDatepicker(datepickerInput, {
       autoClose: true,
       locale: localeEn,
@@ -125,22 +127,23 @@ export class AddTaskModal extends Component {
       dateFormat: "yyyy-MM-dd",
       container: datepickerContainer as HTMLElement,
       onSelect: ({ formattedDate }) => {
-        this.selectedDay = Array.isArray(formattedDate) ? formattedDate[0] : formattedDate;
+        this.selectedDay = Array.isArray(formattedDate)
+          ? formattedDate[0]
+          : formattedDate;
       },
     });
-    
-  
+
     const closeButton = this.element.querySelector("#closeModal");
     if (closeButton) {
       closeButton.addEventListener("click", this.handleClose);
     }
-  
+
     this.element.addEventListener("click", (event) => {
       if (event.target === this.element) {
         this.handleClose();
       }
     });
-  
+
     const form = this.element.querySelector("#taskForm") as HTMLFormElement;
     if (form) {
       form.addEventListener("submit", (event) => {
@@ -148,5 +151,4 @@ export class AddTaskModal extends Component {
       });
     }
   }
-  
 }
