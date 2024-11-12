@@ -173,15 +173,15 @@ export class MainSection extends Component {
       "All",
       ...new Set(this.currentTasks.map((task) => task.category)),
     ];
-  
+
     const extendedDay = formatDate(this.selectedDay);
-  
+
     const html = /*html*/ `
       <section class="bg-main-pattern bg-no-repeat bg-cover h-screen flex items-center justify-center p-10">
         <div class="bg-white border-4 border-black p-4 w-full max-w-3xl">
           <div class="flex flex-col gap-2">
-            <div class="flex justify-between items-baseline">
-              <h3 class="font-archivo font-medium">${extendedDay}</h3>
+            <div class="flex justify-between items-baseline gap-2">
+              <h3 class="font-archivo font-medium max-w-48 sm:max-w-full truncate">${extendedDay}</h3>
               <button id="addButton" class="font-archivo text-gray-500 font-light tracking-widest">Add</button>
             </div>
             <form class="flex flex-col gap-2" onsubmit="return false;">
@@ -192,8 +192,8 @@ export class MainSection extends Component {
                     .map(
                       (category) => /*html*/ `
                         <option value="${category}" ${
-                          category === this.selectedCategory ? "selected" : ""
-                        }>
+                        category === this.selectedCategory ? "selected" : ""
+                      }>
                           ${category}
                         </option>
                       `
@@ -235,15 +235,17 @@ export class MainSection extends Component {
             ${
               filteredTasks.length === 0
                 ? /*html*/ `<p class="text-center text-gray-500">No tasks found.</p>`
-                : ""  
+                : ""
             }
           </ul>
         </div>
       </section>
     `;
-  
+
     setTimeout(() => {
-      const tasksContainer = this.element.querySelector(".tasks-container") as HTMLElement;
+      const tasksContainer = this.element.querySelector(
+        ".tasks-container"
+      ) as HTMLElement;
       if (tasksContainer && filteredTasks.length > 0) {
         tasksContainer.innerHTML = "";
         filteredTasks.forEach((task) => {
@@ -252,8 +254,7 @@ export class MainSection extends Component {
         });
       }
     }, 0);
-  
+
     return html;
   }
-  
 }
