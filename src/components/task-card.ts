@@ -2,12 +2,16 @@ import { Task } from "../types/index";
 import { Component } from "./shared/component.ts";
 import store from "../store/store";
 import { toggleTask } from "../store/task-slice.ts";
+import { EditTaskModal } from "./edit-task-modal.ts";
+import { DeleteTaskModal } from "./delete-task-modal.ts";
 
 export class TaskCard extends Component {
   constructor(props: Task) {
     super(props);
     this.element = document.createElement("li");
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+    this.handleEditClick = this.handleEditClick.bind(this);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   private handleCheckboxChange(event: Event): void {
@@ -17,6 +21,38 @@ export class TaskCard extends Component {
     if (taskId) {
       store.dispatch(toggleTask(taskId));
     }
+  }
+
+  private handleEditClick(): void {
+    const { id, title, description, category, date, completed } = this
+      .props as Task;
+
+    const modal = new EditTaskModal({
+      id,
+      title,
+      description,
+      category,
+      date,
+      completed,
+    });
+
+    modal.mount(document.body);
+  }
+
+  private handleDeleteClick(): void {
+    const { id, title, description, category, date, completed } = this
+      .props as Task;
+
+    const modal = new DeleteTaskModal({
+      id,
+      title,
+      description,
+      category,
+      date,
+      completed,
+    });
+
+    modal.mount(document.body);
   }
 
   render(): string {
@@ -34,10 +70,16 @@ export class TaskCard extends Component {
   
           <div class="flex flex-col justify-between">
               <input type="checkbox" id="checkbox-${id}" data-task-id="${id}" ${
-      completed ? "checked" : ""
-    } class="task-checkbox size-[14px] bg-transparent border-gray-300 focus:ring-black focus:ring-1 rounded-none">
-              <img src="/icons/square-pen.svg" class="size-4"/>
-              <img src="/icons/trash-2.svg" class="size-4"/>
+                completed ? "checked" : ""
+              } class="task-checkbox cursor-pointer size-[14px] bg-transparent border-gray-300 focus:ring-black focus:ring-1 rounded-none">
+              
+              <button id="editButton-${id}" type="button">
+                <img src="/icons/square-pen.svg" class="size-4" />
+              </button>
+
+              <button id="deleteButton-${id}" type="button">
+                <img src="/icons/trash-2.svg" class="size-4" />
+              </button>
           </div>
       </div>
     `;
@@ -52,6 +94,20 @@ export class TaskCard extends Component {
       ) as HTMLInputElement;
       if (checkbox) {
         checkbox.addEventListener("change", this.handleCheckboxChange);
+      }
+
+      const editButton = this.element.querySelector(
+        `#editButton-${this.props.id}`
+      ) as HTMLButtonElement;
+      if (editButton) {
+        editButton.addEventListener("click", this.handleEditClick);
+      }
+
+      const deleteButton = this.element.querySelector(
+        `#deleteButton-${this.props.id}`
+      ) as HTMLButtonElement;
+      if (deleteButton) {
+        deleteButton.addEventListener("click", this.handleDeleteClick);
       }
     }, 0);
   }
