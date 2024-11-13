@@ -1,17 +1,21 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 import { Task } from "../types";
 
 const loadFromLocalStorage = (): Task[] => {
-  const storedTasks = localStorage.getItem("tasks");
+  const storedTasks = localStorage.getItem("@today/tasks");
   return storedTasks ? JSON.parse(storedTasks) : [];
 };
 
-const loadCurrentDay = (): string => {
+const loadSelectedDay = (): string => {
+  const storedSelectedDay = localStorage.getItem("@today/selectedDay");
+  if (storedSelectedDay) {
+    return storedSelectedDay;
+  }
+
   const localDate = new Date();
   localDate.setHours(0, 0, 0, 0);
-  const formattedDate = localDate.toISOString().split("T")[0];
-
-  return formattedDate;
+  return localDate.toISOString().split("T")[0];
 };
 
 interface TasksState {
@@ -25,18 +29,18 @@ const tasksSlice = createSlice({
   name: "tasks",
   initialState: {
     tasks: loadFromLocalStorage(),
-    selectedDay: loadCurrentDay(),
+    selectedDay: loadSelectedDay(),
     selectedCategory: null,
     searchQuery: "",
   } as TasksState,
   reducers: {
     setTasks(state, action: PayloadAction<Task[]>) {
       state.tasks = action.payload;
-      localStorage.setItem("tasks", JSON.stringify(action.payload));
+      localStorage.setItem("@today/tasks", JSON.stringify(action.payload));
     },
     setSelectedDay(state, action: PayloadAction<string>) {
       state.selectedDay = action.payload;
-      localStorage.setItem("selectedDay", action.payload);
+      localStorage.setItem("@today/selectedDay", action.payload);
     },
     setSelectedCategory(state, action: PayloadAction<string | null>) {
       state.selectedCategory = action.payload;
@@ -46,7 +50,7 @@ const tasksSlice = createSlice({
     },
     addTask(state, action: PayloadAction<Task>) {
       state.tasks.push(action.payload);
-      localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      localStorage.setItem("@today/tasks", JSON.stringify(state.tasks));
     },
     toggleTask(state, action: PayloadAction<string>) {
       const taskId = action.payload;
@@ -54,7 +58,7 @@ const tasksSlice = createSlice({
       if (taskIndex >= 0) {
         const task = state.tasks[taskIndex];
         task.completed = !task.completed;
-        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+        localStorage.setItem("@today/tasks", JSON.stringify(state.tasks));
       }
     },
     editTask(
@@ -65,12 +69,12 @@ const tasksSlice = createSlice({
       const taskIndex = state.tasks.findIndex((task) => task.id === id);
       if (taskIndex >= 0) {
         state.tasks[taskIndex] = { ...state.tasks[taskIndex], ...updatedTask };
-        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+        localStorage.setItem("@today/tasks", JSON.stringify(state.tasks));
       }
     },
     deleteTask(state, action: PayloadAction<string>) {
       state.tasks = state.tasks.filter((task) => task.id !== action.payload);
-      localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      localStorage.setItem("@today/tasks", JSON.stringify(state.tasks));
     },
   },
 });
