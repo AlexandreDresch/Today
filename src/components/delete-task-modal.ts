@@ -1,6 +1,8 @@
 import { Component } from "./shared/component";
+
 import store from "../store/store";
 import { deleteTask } from "../store/task-slice";
+
 import { Task } from "../types";
 
 export class DeleteTaskModal extends Component {
@@ -32,23 +34,25 @@ export class DeleteTaskModal extends Component {
     return /*html*/ `
       <div class="bg-white border-4 border-black p-4 w-full sm:min-w-[300px] z-0">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold font-archivo">Delete Task</h2>
-          <button id="closeModal">
-            <img src="/icons/x.svg" class="size-5" />
+          <h2 class="text-lg font-semibold font-archivo" id="modalTitle">Delete Task</h2>
+          <button id="closeModal" aria-label="Close modal">
+            <img src="/icons/x.svg" class="size-5" alt="Close"/>
           </button>
         </div>
         <div>
-          <p>Are you sure you want to delete the task <strong>"${title}"</strong>?</p>
+          <p id="modalDescription">Are you sure you want to delete the task <strong>"${title}"</strong>?</p>
           <div class="flex justify-end space-x-2 mt-4">
             <button 
               id="cancelButton" 
               class="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-100"
+              aria-label="Cancel task deletion"
             >
               Cancel
             </button>
             <button 
               id="confirmButton" 
               class="px-4 py-2 border border-red-600 bg-red-600 text-white hover:bg-red-700"
+              aria-label="Confirm task deletion"
             >
               Delete
             </button>
