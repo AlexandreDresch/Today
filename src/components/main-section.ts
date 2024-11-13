@@ -102,6 +102,7 @@ export class MainSection extends Component {
       ) as HTMLInputElement;
       if (datepickerInput) {
         new AirDatepicker(datepickerInput, {
+          position: "bottom right",
           autoClose: true,
           locale: localeEn,
           dateFormat: "yyyy-MM-dd",

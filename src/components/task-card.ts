@@ -67,7 +67,7 @@ export class TaskCard extends Component {
               <p class="max-w-36 sm:max-w-full truncate" title="${description}">
                 ${description}
               </p>
-              <p class="border px-2 border-slate-300 text-center">${category}</p>
+              <p class="border px-2 border-slate-300 text-center w-36">${category}</p>
           </div>
   
           <div class="flex flex-col justify-between">
